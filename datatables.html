@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataTables</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
+    <style>
+        .dataTables_wrapper .dataTables_paginate {
+            text-align: center;
+        }
+        .dataTables_wrapper .dataTables_info {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="tab1" data-bs-toggle="tab" href="#table1" role="tab">Table 1</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="tab2" data-bs-toggle="tab" href="#table2" role="tab">Table 2</a>
+            </li>
+        </ul>
+        <div class="tab-content mt-3">
+            <div class="tab-pane fade show active" id="table1" role="tabpanel">
+                <table id="table1_id" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Column 1</th>
+                            <th>Column 2</th>
+                            <th>Column 3</th>
+                            <th>Column 4</th>
+                            <th>Column 5</th>
+                            <th>Column 6</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="table2" role="tabpanel"> 
+                <table id="table2_id" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Column 1</th>
+                            <th>Column 2</th>
+                            <th>Column 3</th>
+                            <th>Column 4</th>
+                            <th>Column 5</th>
+                            <th>Column 6</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 5 JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables JavaScript -->
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.2.2/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.html5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable for both tables
+            function initializeDataTable(tableId) {
+                $(tableId).DataTable({
+                    ajax: {
+                        url: 'https://jsonplaceholder.typicode.com/posts', // Replace with your own AJAX source
+                        dataSrc: ''
+                    },
+                    columns: [
+                        { data: null, defaultContent: '<input type="checkbox" class="select-row">' },
+                        { data: 'userId' },
+                        { data: 'id' },
+                        { data: 'title' },
+                        { data: 'body' },
+                        { data: 'userId' },
+                        { data: 'id' }
+                    ],
+                    dom: '<"top"lf>rt<"bottom"ip><"clear">',
+                    pagingType: 'simple_numbers',
+                    columnDefs: [{
+                        targets: 0,
+                        orderable: false
+                    }],
+                    initComplete: function() {
+                        var api = this.api();
+
+                        // Add search inputs for each column
+                        api.columns().every(function() {
+                            var column = this;
+                            var input = $('<input type="text" placeholder="Search" class="form-control form-control-sm" />')
+                                .appendTo($(column.header()).empty())
+                                .on('keyup change clear', function() {
+                                    column.search($(this).val(), false, false, true).draw();
+                                });
+                        });
+
+                        // Add column visibility toggle
+                        $('<button class="btn btn-primary mt-2">Toggle Columns</button>')
+                            .appendTo('div.top')
+                            .on('click', function() {
+                                api.columns().visible(!api.columns().visible()[0], false).draw();
+                            });
+                    }
+                });
+            }
+
+            initializeDataTable('#table1_id');
+            initializeDataTable('#table2_id');
+
+            // Handle row selection and deletion
+            $('body').on('click', '.select-row', function() {
+                var table = $(this).closest('table').DataTable();
+                var row = $(this).closest('tr');
+                if (this.checked) {
+                    $(row).addClass('selected');
+                } else {
+                    $(row).removeClass('selected');
+                }
+            });
+
+            // Delete selected rows
+            $('<button class="btn btn-danger mt-2">Delete Selected Rows</button>')
+                .appendTo('div.top')
+                .on('click', function() {
+                    $('.select-row:checked').each(function() {
+                        var table = $(this).closest('table').DataTable();
+                        table.row($(this).closest('tr')).remove().draw();
+                    });
+                });
+        });
+    </script>
+</body>
+</html>
